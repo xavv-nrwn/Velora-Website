@@ -38,7 +38,24 @@ export async function ensureDemoDatabase() {
 
 export async function ensureUserCategories(userId) {
   const defaults = [['Uang jajan','income'],['Hadiah','income'],['Hasil kerja','income'],['Lainnya','income'],['Makanan dan minuman','expense'],['Transportasi','expense'],['Sekolah','expense'],['Belanja','expense'],['Hiburan','expense'],['Tabungan','expense'],['Lainnya','expense']];
+  const [categories] = await pool.query('SELECT id,name,type FROM categories WHERE user_id=? ORDER BY id',[userId]);
+  const keepers = new Map();
+
+  for (const category of categories) {
+    const key = `${category.type}:${String(category.name).trim().toLowerCase()}`;
+    const keeper = keepers.get(key);
+    if (!keeper) {
+      keepers.set(key, category);
+    } else {
+      await pool.query('UPDATE transactions SET category_id=? WHERE category_id=? AND user_id=?',[keeper.id,category.id,userId]);
+      await pool.query('DELETE FROM categories WHERE id=? AND user_id=?',[category.id,userId]);
+    }
+  }
+
   for (const [name, type] of defaults) {
-    await pool.query('INSERT IGNORE INTO categories(user_id,name,type) VALUES(?,?,?)', [userId, name, type]);
+    const key = `${type}:${name.toLowerCase()}`;
+    if (!keepers.has(key)) {
+      await pool.query('INSERT IGNORE INTO categories(user_id,name,type) VALUES(?,?,?)',[userId,name,type]);
+    }
   }
 }
