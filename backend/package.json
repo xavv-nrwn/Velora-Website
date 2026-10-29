@@ -1,0 +1,1 @@
+{"name":"duitku-backend","private":true,"type":"module","scripts":{"start":"node server.js","dev":"node --watch server.js"},"dependencies":{"bcrypt":"^5.1.1","cors":"^2.8.5","dotenv":"^16.4.7","duitku":"file:..","express":"^4.21.2","express-session":"^1.18.1","helmet":"^8.0.0","mysql2":"^3.12.0"}}

@@ -1,0 +1,25 @@
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import session from 'express-session';
+import auth from './routes/auth.js';
+import transactions from './routes/transactions.js';
+import categories from './routes/categories.js';
+import goals from './routes/goals.js';
+import reports from './routes/reports.js';
+
+const app = express();
+app.set('trust proxy', 1);
+app.use(helmet({ crossOriginResourcePolicy: false }));
+app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
+app.use(express.json());
+app.use(session({ secret: process.env.SESSION_SECRET || 'duitku-development-secret', resave: false, saveUninitialized: false, cookie: { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 7 * 24 * 60 * 60 * 1000 } }));
+app.use('/api/auth', auth);
+app.use('/api/transactions', transactions);
+app.use('/api/categories', categories);
+app.use('/api/goals', goals);
+app.get('/api/health', (req, res) => res.json({ ok: true }));
+app.use('/api', reports);
+app.use((err, req, res, next) => { console.error(err); res.status(500).json({ error: 'Terjadi kesalahan pada server' }); });
+export default app;
