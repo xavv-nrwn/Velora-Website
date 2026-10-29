@@ -11,13 +11,15 @@ export async function ensureDemoDatabase() {
     JOIN categories original
       ON original.user_id = duplicate.user_id
      AND original.type = duplicate.type
-     AND original.name = duplicate.name
+     AND LOWER(TRIM(original.name)) = LOWER(TRIM(duplicate.name))
      AND original.id < duplicate.id`);
 
   for (const duplicate of duplicates) {
     await pool.query('UPDATE transactions SET category_id=? WHERE category_id=?', [duplicate.keep_id, duplicate.duplicate_id]);
     await pool.query('DELETE FROM categories WHERE id=?', [duplicate.duplicate_id]);
   }
+
+  await pool.query('UPDATE categories SET name=TRIM(name)');
 
   const [indexes] = await pool.query("SHOW INDEX FROM categories WHERE Key_name = 'categories_user_type_name'");
   if (!indexes.length) {
