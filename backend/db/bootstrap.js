@@ -32,5 +32,13 @@ export async function ensureDemoDatabase() {
   for (const [name, type] of defaults) {
     await pool.query('INSERT IGNORE INTO categories(user_id,name,type) VALUES(?,?,?)', [user.id, name, type]);
   }
+  await ensureUserCategories(user.id);
   return user.id;
+}
+
+export async function ensureUserCategories(userId) {
+  const defaults = [['Uang jajan','income'],['Hadiah','income'],['Hasil kerja','income'],['Lainnya','income'],['Makanan dan minuman','expense'],['Transportasi','expense'],['Sekolah','expense'],['Belanja','expense'],['Hiburan','expense'],['Tabungan','expense'],['Lainnya','expense']];
+  for (const [name, type] of defaults) {
+    await pool.query('INSERT IGNORE INTO categories(user_id,name,type) VALUES(?,?,?)', [userId, name, type]);
+  }
 }
